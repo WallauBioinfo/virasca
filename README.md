@@ -1,6 +1,6 @@
 # Virasca
 
-Virasca is a CLI tool for viral genome assembly and identification, using Snakemake for workflow management.
+Virasca (**Vir**us **Sca**ffolding) is a CLI tool for scaffolding/genome assembly of viral contigs, using Snakemake for workflow management.
 
 ## Installation
 
