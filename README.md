@@ -79,8 +79,8 @@ python3 tests/test_cli.py
 
 ```mermaid
 graph TD
-    Start["Input: Contigs & Reads"] --> Decision{"Use Virseqimprover?"}
-    Decision -- Yes --> Virseq["Virseqimprover\n(Iterative Extension)"]
+    Start["Input: Contigs  & Reads"] --> Decision{"Use Virseqimprover?"}
+    Decision -- Yes --> Virseq["Virseqimprover (Iterative Extension)"]
     Decision -- No --> Blast["BLASTn vs Database"]
     Virseq --> Blast
     Blast --> Classify["Classification"]
