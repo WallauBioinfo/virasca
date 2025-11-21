@@ -22,13 +22,6 @@ It is recommended to use `micromamba` (or `conda`/`mamba`) to manage dependencie
    micromamba activate virasca
    ```
 
-4. **Install Virseqimprover** (optional, only if using `--use-virseqimprover` flag):
-   ```bash
-   conda install Virseqimprover --channel haoqiusong
-   ```
-   
-   Note: If this fails with micromamba, you may need to use regular conda for this step, or ensure all virseqimprover dependencies (bwa, samtools, pilon, spades, etc.) are available in your environment.
-
 ## Usage
 
 ### Configure Database
