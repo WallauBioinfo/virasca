@@ -8,7 +8,7 @@ It is recommended to use `micromamba` (or `conda`/`mamba`) to manage dependencie
 
 1. **Clone virasca repository and submodules**:
    ```bash
-   git clone  --recursive https://github.com/WallauBioinfo/virasca.git
+   git clone https://github.com/WallauBioinfo/virasca.git
    cd virasca
    ```
 
