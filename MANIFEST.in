@@ -1,0 +1,2 @@
+recursive-include virasca/workflow *
+recursive-include virasca/submodules *

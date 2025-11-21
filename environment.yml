@@ -1,0 +1,34 @@
+name: virasca
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.8.0,<3.12.0
+  - snakemake=7.32.4
+  - seqkit>=2.11.0,<2.12.0
+  - pulp>=2.7.0,<2.8.0
+  - kallisto>=0.51.0,<0.52.0
+  - click>=8.3.0,<8.4.0
+  - pandas>=2.3.0,<2.4.0
+  - bowtie2>=2.5.0,<2.6.0
+  - bbmap>=39.26,<39.27
+  - pilon>=1.24,<1.25
+  - spades>=4.2.0,<4.3.0
+  - bedtools>=2.31.0,<2.32.0
+  - salmon>=1.10.0,<1.11.0
+  - cd-hit>=4.8.0,<4.9.0
+  - pyyaml>=6.0.0,<6.1.0
+  - fastp>=1.0.0,<1.1.0
+  - bwa=0.7.19
+  - samtools>=1.21.0,<1.22.0
+  - ivar>=1.4.0,<1.5.0
+  - blast>=2.16.0,<2.17.0
+  - ragtag>=2.1.0,<2.2.0
+  - taxonkit>=0.20.0,<0.21.0
+  - ncbi-datasets-cli>=18.9.0,<18.10.0
+  - unzip
+  - wget
+  - pip
+  - pip:
+    - .

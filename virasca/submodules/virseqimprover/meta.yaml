@@ -1,0 +1,38 @@
+package:
+  name: "virseqimprover"
+  version: "1.2"
+
+source:
+  git_rev: v1.2
+  git_url: https://github.com/haoqiusong/VirSeqImprover
+
+requirements:
+  host:
+    - python
+    - setuptools
+  build:
+    - python
+  run:
+    - python
+    - samtools >=1.7
+    - kallisto >=0.43.0
+    - blast
+    - bowtie2
+    - bbmap
+    - pilon
+    - spades >=3.15.4
+    - bedtools
+    - salmon =0.8.1
+    - cd-hit
+    - mummer
+
+about:
+  home: https://github.com/haoqiusong/VirSeqImprover
+  license: MIT
+  license_familY: MIT
+  license_file: LICENSE
+  summary: "An integrated pipeline for error-correction, extension, and annotation of viral scaffolds."
+
+extra:
+  recipe-maintainers:
+    - haoqiusong

@@ -1,0 +1,12 @@
+# Include rules conditionally based on which workflow is being run
+# If input_fasta is in config, we're running the analysis workflow
+# Otherwise, we're running the database configuration workflow
+
+if "input_fasta" in config:
+    include: "rules/analysis.smk"
+else:
+    include: "rules/database.smk"
+
+rule all:
+    input:
+        [] # Placeholder, actual targets are defined in specific workflows
