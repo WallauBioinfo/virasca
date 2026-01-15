@@ -32,6 +32,32 @@ rule virseqimprove:
         else
             cp {params.out_dir}/scaffold.fasta {output}
         fi
+        
+        grep '^>' {output} \
+            | sed 's/^>//; s/ .*//; s/:.*//; s/_pilon$//' \
+            > {params.out_dir}/treated_ids.txt
+
+        # Seleciona do scaffold original apenas sequências NÃO tratadas
+        awk -v ids={params.out_dir}/treated_ids.txt '
+            BEGIN {
+                while ((getline < ids) > 0) seen[$1]=1
+            }
+            /^>/ {
+                id=$0
+                sub(/^>/,"",id)
+                sub(/ .*/,"",id)
+                sub(/:.*$/,"",id)
+                sub(/_pilon$/,"",id)
+                keep = !(id in seen)
+            }
+            keep { print }
+        ' {input.scaffold} > {params.out_dir}/not_treated.fasta
+
+        # Concatena tratado + não tratados (sobrescreve output final)
+        cat {output} {params.out_dir}/not_treated.fasta \
+            > {params.out_dir}/final_tmp.fasta
+
+        mv {params.out_dir}/final_tmp.fasta {output}
         """
 
 def get_blastn_input(wildcards):
