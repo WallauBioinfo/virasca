@@ -37,23 +37,22 @@ rule virseqimprove:
             | sed 's/^>//; s/ .*//; s/:.*//; s/_pilon$//' \
             > {params.out_dir}/treated_ids.txt
 
-        # Seleciona do scaffold original apenas sequências NÃO tratadas
+        
         awk -v ids={params.out_dir}/treated_ids.txt '
-            BEGIN {
+            BEGIN {{
                 while ((getline < ids) > 0) seen[$1]=1
-            }
-            /^>/ {
+            }}
+            /^>/ {{
                 id=$0
                 sub(/^>/,"",id)
                 sub(/ .*/,"",id)
                 sub(/:.*$/,"",id)
                 sub(/_pilon$/,"",id)
                 keep = !(id in seen)
-            }
-            keep { print }
+            }}
+            keep {{ print }}
         ' {input.scaffold} > {params.out_dir}/not_treated.fasta
 
-        # Concatena tratado + não tratados (sobrescreve output final)
         cat {output} {params.out_dir}/not_treated.fasta \
             > {params.out_dir}/final_tmp.fasta
 
