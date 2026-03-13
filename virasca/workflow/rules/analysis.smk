@@ -202,16 +202,29 @@ rule read_assembly:
         # Mark as done
         echo "Read assembly completed for all intermediario references" > {output}
         """
+def get_ragtag_input_fasta(wildcards):
+    if config.get("use_virseqimprover", False):
+        return f"{OUTPUT_DIR}/scaffold.fasta"
+    else:
+        return config.get("input_fasta", "")
 
 rule ragtag:
     input:
         refs_mapping = f"{OUTPUT_DIR}/selected_reference.acc",
         database_seq = config.get("database_seq", ""),
-        input_fasta = config.get("input_fasta", "")
+        input_fasta = get_ragtag_input_fasta
     output:
         f"{OUTPUT_DIR}/ragtag_done.txt"
     params:
-        output_dir = OUTPUT_DIR
+        output_dir = OUTPUT_DIR, 
+
+        ragtag_threads = config["params"].get("ragtag_threads", 1),
+        ragtag_mm2_preset = config["params"].get("ragtag_mm2_preset", "asm5"),
+        ragtag_min_unique_len = config["params"].get("ragtag_min_unique_len", 1000),
+        ragtag_min_mapq = config["params"].get("ragtag_min_mapq", 10),
+
+        infer_gaps_flag = "-r" if config["params"].get("ragtag_infer_gaps", False) else "",
+        remove_small_flag = "--remove-small" if config["params"].get("ragtag_remove_small", False) else ""
     shell:
         """
         # Check if refs_mapping is empty
@@ -240,7 +253,7 @@ rule ragtag:
             
             # Convert comma-separated contigs to one per line
             contig_list="${{ref_dir}}/contig_list.txt"
-            echo "$contigs" | tr ',' '\n' > "$contig_list"
+            echo "$contigs" | tr ',' '\\n' > "$contig_list"
             
             # Extract contigs from input fasta
             contigs_file="${{ref_dir}}/contigs.fasta"
@@ -248,7 +261,7 @@ rule ragtag:
             
             # Run ragtag for this reference
             cd "$ref_dir"
-            ragtag.py scaffold "$ref_file" "$contigs_file"
+            ragtag.py scaffold "$ref_file" "$contigs_file" -t {params.ragtag_threads} --mm2-params "-x {params.ragtag_mm2_preset}" -f {params.ragtag_min_unique_len} -q {params.ragtag_min_mapq} {params.infer_gaps_flag} {params.remove_small_flag} 
             cd -
             
         done < {input.refs_mapping}
