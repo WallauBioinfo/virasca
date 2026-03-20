@@ -8,7 +8,7 @@ def get_snakefile(file_name):
 
 def run_snakemake(target, config=None, cores=1, dryrun=False):
     snakefile = get_snakefile("Snakefile")
-    
+
     # Snakemake 7.x API
     success = snakemake.snakemake(
         snakefile=snakefile,
@@ -16,7 +16,8 @@ def run_snakemake(target, config=None, cores=1, dryrun=False):
         config=config,
         cores=cores,
         dryrun=dryrun,
-        printshellcmds=True
+        printshellcmds=True,
+        use_conda=True,
     )
     return success
 
@@ -57,7 +58,9 @@ def configure_database(taxon_id, cores, dry_run):
 @click.option("--bwa-threads", default=4, help="Number of threads for BWA (default: 4)")
 @click.option("--min-len", default=50, help="Minimum read length for fastp (default: 50)")
 @click.option("--trim-len", default=0, help="Trim length for fastp (default: 0)")
+@click.option("--min-base-quality", default=20, help="Minimum base quality for fastp (default: 20)")
 @click.option("--mapping-quality", default=20, help="Minimum mapping quality for iVar consensus (default: 20)")
+@click.option("--min-depth", default=1, help="Minimum depth to call consensus in iVar (default: 1)")
 @click.option("--cores", default=4, help="Number of cores for Snakemake (default: 4)")
 @click.option("--ragtag-threads", default=1, help="Number of threads for RagTag (default: 1)")
 @click.option("--ragtag-mm2-preset", default="asm5", type=click.Choice(["asm5", "asm10", "asm20"]), help="Minimap2 preset for RagTag (default: asm5)")
@@ -67,7 +70,7 @@ def configure_database(taxon_id, cores, dry_run):
 @click.option("--ragtag-remove-small", is_flag=True,help="Remove unique alignments shorter than --ragtag-min-unique-len")
 @click.option("--dry-run", is_flag=True, help="Dry run without executing")
 def run(input, reads_r1, reads_r2, database_seq, database_metadata, output,  blast_task, blast_word_size, use_virseqimprover, 
-        tax_level, fastp_threads, bwa_threads, min_len, trim_len, mapping_quality, cores, ragtag_threads, ragtag_mm2_preset,
+        tax_level, fastp_threads, bwa_threads, min_len, trim_len, min_base_quality, mapping_quality, min_depth, cores, ragtag_threads, ragtag_mm2_preset,
         ragtag_min_unique_len, ragtag_min_mapq, ragtag_infer_gaps, ragtag_remove_small, dry_run):
     """Run the virasca analysis pipeline."""
     click.echo("Running analysis...")
@@ -93,7 +96,9 @@ def run(input, reads_r1, reads_r2, database_seq, database_metadata, output,  bla
             "bwa_threads": bwa_threads,
             "minLen": min_len,
             "trimLen": trim_len,
+            "min_base_quality": min_base_quality,
             "mapping_quality": mapping_quality,
+            "min_depth": min_depth,
             "ragtag_threads": ragtag_threads,
             "ragtag_mm2_preset": ragtag_mm2_preset,
             "ragtag_min_unique_len": ragtag_min_unique_len,

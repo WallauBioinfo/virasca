@@ -1,0 +1,8 @@
+name: utils
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - unzip
+  - wget

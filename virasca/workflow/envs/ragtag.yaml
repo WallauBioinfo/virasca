@@ -1,0 +1,9 @@
+name: ragtag
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.8.0,<3.12.0
+  - ragtag>=2.1.0,<2.2.0
+  - seqkit>=2.11.0,<2.12.0

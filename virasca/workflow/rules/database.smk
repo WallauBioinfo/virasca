@@ -5,6 +5,7 @@ rule configure_database_all:
         expand("{home}/.taxonkit/names.dmp", home=os.environ["HOME"])
 
 rule download_datasets:
+    conda: "../envs/datasets.yaml"
     output:
         "database/ncbi_dataset.zip"
     params:
@@ -19,6 +20,7 @@ rule download_datasets:
         """
 
 rule unzip_datasets:
+    conda: "../envs/utils.yaml"
     input:
         "database/ncbi_dataset.zip"
     output:
@@ -28,6 +30,7 @@ rule unzip_datasets:
         "unzip -o {input} -d database"
 
 rule process_metadata:
+    conda: "../envs/datasets.yaml"
     input:
         "database/ncbi_dataset/data/data_report.jsonl"
     output:
@@ -42,6 +45,7 @@ rule process_metadata:
         """
 
 rule setup_taxonomy:
+    conda: "../envs/utils.yaml"
     output:
         expand("{home}/.taxonkit/{file}", home=os.environ["HOME"], file=["names.dmp", "nodes.dmp", "delnodes.dmp", "merged.dmp"])
     params:
@@ -59,6 +63,7 @@ rule setup_taxonomy:
         """
 
 rule map_taxonomy:
+    conda: "../envs/taxonkit.yaml"
     input:
         "database/tmp_metadata.tsv",
         expand("{home}/.taxonkit/names.dmp", home=os.environ["HOME"])
@@ -75,13 +80,14 @@ rule map_taxonomy:
         """
 
 rule join_metadata:
+    conda: "../envs/utils.yaml"
     input:
         meta="database/tmp_metadata.tsv",
         tax="database/taxid_mapping.tsv"
     output:
         "database/metadata.tsv"
-    run:
-        shell("""
+    shell:
+        """
         awk -F'\\t' '
         BEGIN {{ FS = OFS = "\\t" }}
         FNR==NR {{
@@ -101,9 +107,10 @@ rule join_metadata:
             }}
         }}
         ' {input.tax} {input.meta} > {output}
-        """)
+        """
 
 rule make_blast_db:
+    conda: "../envs/blast.yaml"
     input:
         sequence = "database/ncbi_dataset/data/genomic.fna",
         metadata = "database/metadata.tsv"

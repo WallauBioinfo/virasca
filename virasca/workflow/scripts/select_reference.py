@@ -64,9 +64,10 @@ def main(blast_file, metadata_file, output_file, tax_level="species"):
         
         # Collect all contigs (qseqid) that belong to this taxonomic group
         contigs = tax_group_hits["qseqid"].unique().tolist()
-        contigs_str = ",".join(contigs)
         
-        results.append(f"{best_ref}\t{contigs_str}")
+        if len(contigs) >= 2:
+            contigs_str = ",".join(contigs)
+            results.append(f"{best_ref}\t{contigs_str}")
     
     if not results:
         # No valid references found
@@ -81,13 +82,13 @@ def main(blast_file, metadata_file, output_file, tax_level="species"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Select best reference genome based on taxonomy")
-    parser.add_argument("blast_file", help="Classified BLAST results TSV")
-    parser.add_argument("metadata_file", help="Database metadata TSV with taxonomy")
-    parser.add_argument("output_file", help="Output file for selected references")
+    parser.add_argument("--blast", required=True, help="Classified BLAST results TSV")
+    parser.add_argument("--metadata", required=True, help="Database metadata TSV with taxonomy")
+    parser.add_argument("--output", required=True, help="Output file for selected references")
     parser.add_argument("--tax-level", default="species", 
                         choices=["phylum", "class", "order", "family", "genus", "species"],
                         help="Taxonomic level to group by (default: species)")
     
     args = parser.parse_args()
     
-    main(args.blast_file, args.metadata_file, args.output_file, args.tax_level)
+    main(args.blast, args.metadata, args.output, args.tax_level)
