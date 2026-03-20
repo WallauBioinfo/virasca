@@ -217,7 +217,6 @@ rule ragtag:
         f"{OUTPUT_DIR}/ragtag_done.txt"
     params:
         output_dir = OUTPUT_DIR, 
-
         ragtag_threads = config["params"].get("ragtag_threads", 1),
         ragtag_mm2_preset = config["params"].get("ragtag_mm2_preset", "asm5"),
         ragtag_min_unique_len = config["params"].get("ragtag_min_unique_len", 1000),
