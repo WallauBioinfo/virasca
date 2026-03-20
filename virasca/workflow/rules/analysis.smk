@@ -221,7 +221,6 @@ rule ragtag:
         ragtag_mm2_preset = config["params"].get("ragtag_mm2_preset", "asm5"),
         ragtag_min_unique_len = config["params"].get("ragtag_min_unique_len", 1000),
         ragtag_min_mapq = config["params"].get("ragtag_min_mapq", 10),
-
         infer_gaps_flag = "-r" if config["params"].get("ragtag_infer_gaps", False) else "",
         remove_small_flag = "--remove-small" if config["params"].get("ragtag_remove_small", False) else ""
     shell:
