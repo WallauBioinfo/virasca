@@ -9,6 +9,7 @@ rule run_all:
         f"{OUTPUT_DIR}/read_assembly_done.txt"
 
 rule virseqimprove:
+    conda: "../envs/virseqimprove.yaml"
     input:
         scaffold = config.get("input_fasta", ""),
         r1 = config.get("reads_R1", ""),
@@ -66,6 +67,7 @@ def get_blastn_input(wildcards):
         return config.get("input_fasta")
 
 rule blastn:
+    conda: "../envs/blast.yaml"
     input:
         query = get_blastn_input,
         db = config.get("database_seq")
@@ -91,14 +93,20 @@ rule blastn:
 
 
 rule classify_blast:
+    conda: "../envs/python_pandas.yaml"
     input:
         f"{OUTPUT_DIR}/blastn_results.tsv"
     output:
         f"{OUTPUT_DIR}/blastn_classified.tsv"
     shell:
-        "python3 {PKG_PATH}/workflow/scripts/classify.py {input} {output}"
+        """
+        python3 {PKG_PATH}/workflow/scripts/classify.py \
+            --input {input} \
+            --output {output}
+        """
 
 rule select_reference:
+    conda: "../envs/python_pandas.yaml"
     input:
         blast = f"{OUTPUT_DIR}/blastn_classified.tsv",
         metadata = config.get("database_metadata")
@@ -107,9 +115,16 @@ rule select_reference:
     params:
         tax_level = config.get("tax_level", "species")
     shell:
-        "python3 {PKG_PATH}/workflow/scripts/select_reference.py {input.blast} {input.metadata} {output} --tax-level {params.tax_level}"
+        """
+        python3 {PKG_PATH}/workflow/scripts/select_reference.py \
+            --blast {input.blast} \
+            --metadata {input.metadata} \
+            --output {output} \
+            --tax-level {params.tax_level}
+        """
 
 rule select_intermediario:
+    conda: "../envs/python_pandas.yaml"
     input:
         blast = f"{OUTPUT_DIR}/blastn_classified.tsv",
         metadata = config.get("database_metadata", "")
@@ -118,9 +133,16 @@ rule select_intermediario:
     params:
         tax_level = config.get("tax_level", "species")
     shell:
-        "python3 {PKG_PATH}/workflow/scripts/select_intermediario.py {input.blast} {input.metadata} {output} --tax-level {params.tax_level}"
+        """
+        python3 {PKG_PATH}/workflow/scripts/select_intermediario.py \
+            --blast {input.blast} \
+            --metadata {input.metadata} \
+            --output {output} \
+            --tax-level {params.tax_level}
+        """
 
 rule read_assembly:
+    conda: "../envs/read_assembly.yaml"
     input:
         refs = f"{OUTPUT_DIR}/selected_intermediario.acc",
         database_seq = config.get("database_seq", ""),
@@ -134,7 +156,9 @@ rule read_assembly:
         bwa_threads = config.get("params", {}).get("bwa_threads", 4),
         minLen = config.get("params", {}).get("minLen", 50),
         trimLen = config.get("params", {}).get("trimLen", 0),
-        mapping_quality = config.get("params", {}).get("mapping_quality", 20)
+        min_base_quality = config.get("params", {}).get("min_base_quality", 20),
+        mapping_quality = config.get("params", {}).get("mapping_quality", 20),
+        min_depth = config.get("params", {}).get("min_depth", 1)
     shell:
         """
         # Check if refs file is empty
@@ -169,7 +193,7 @@ rule read_assembly:
                 -j "${{ref_dir}}/fastp.json" \
                 -l {params.minLen} -f {params.trimLen} -t {params.trimLen} \
                 -F {params.trimLen} -T {params.trimLen} \
-                --cut_front --cut_tail --qualified_quality_phred 20
+                --cut_front --cut_tail --qualified_quality_phred {params.min_base_quality}
             
             # Build BWA index
             bwa index "$ref_file"
@@ -197,7 +221,7 @@ rule read_assembly:
                     -p "${{ref_dir}}/consensus" \
                     -q {params.mapping_quality} \
                     -t 0 \
-                    -m 10 \
+                    -m {params.min_depth} \
                     -n N \
                     -c 0.51
             
@@ -213,6 +237,7 @@ def get_ragtag_input_fasta(wildcards):
         return config.get("input_fasta", "")
 
 rule ragtag:
+    conda: "../envs/ragtag.yaml"
     input:
         refs_mapping = f"{OUTPUT_DIR}/selected_reference.acc",
         database_seq = config.get("database_seq", ""),
@@ -261,6 +286,15 @@ rule ragtag:
             contigs_file="${{ref_dir}}/contigs.fasta"
             seqkit grep -f "$contig_list" {input.input_fasta} > "$contigs_file"
             
+            # Check number of contigs
+            num_contigs=$(wc -l < "$contig_list")
+            num_contigs=$(echo $num_contigs | tr -d ' ')
+            if [ "$num_contigs" -lt 2 ]; then
+                echo "WARNING: Only $num_contigs contig assigned to reference $ref_acc. RagTag requires at least 2 contigs to scaffold. Skipping scaffolding for this reference." | tee -a {params.output_dir}/ragtag_skipped.log
+                continue
+            fi
+            
+            
             # Run ragtag for this reference
             cd "$ref_dir"
             ragtag.py scaffold "$ref_file" "$contigs_file" \
@@ -277,12 +311,26 @@ rule ragtag:
         """
 
 rule generate_output:
+    conda: "../envs/python_pandas.yaml"
     input:
         blast_classified = f"{OUTPUT_DIR}/blastn_classified.tsv",
         ref_mapping = f"{OUTPUT_DIR}/selected_reference.acc",
+        intermediario_mapping = f"{OUTPUT_DIR}/selected_intermediario.acc",
         metadata = config.get("database_metadata", ""),
         ragtag_done = f"{OUTPUT_DIR}/ragtag_done.txt"
     output:
-        f"{OUTPUT_DIR}/output.tsv"
+        tsv = f"{OUTPUT_DIR}/output.tsv",
+        log = f"{OUTPUT_DIR}/output.info.md"
+    params:
+        output_dir = OUTPUT_DIR
     shell:
-        "python3 {PKG_PATH}/workflow/scripts/generate_output.py {input.blast_classified} {input.ref_mapping} {input.metadata} {input.ragtag_done} {output}"
+        """
+        python3 {PKG_PATH}/workflow/scripts/generate_output.py \
+            --blast {input.blast_classified} \
+            --ragtag-mapping {input.ref_mapping} \
+            --inter-mapping {input.intermediario_mapping} \
+            --metadata {input.metadata} \
+            --output-dir {params.output_dir} \
+            --output-tsv {output.tsv} \
+            --output-log {output.log}
+        """

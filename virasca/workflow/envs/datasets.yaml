@@ -1,0 +1,7 @@
+name: datasets
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - ncbi-datasets-cli>=18.9.0,<18.10.0

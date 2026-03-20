@@ -26,9 +26,11 @@ def main(input_file, output_file):
 
     df.to_csv(output_file, sep="\t", index=False)
 
+import argparse
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python classify.py <input_tsv> <output_tsv>")
-        sys.exit(1)
-    
-    main(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser(description="Classify BLAST results")
+    parser.add_argument("--input", required=True, help="Input BLAST results file")
+    parser.add_argument("--output", required=True, help="Output classified results file")
+    args = parser.parse_args()
+    main(args.input, args.output)
