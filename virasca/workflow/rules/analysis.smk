@@ -259,7 +259,11 @@ rule ragtag:
             
             # Run ragtag for this reference
             cd "$ref_dir"
-            ragtag.py scaffold "$ref_file" "$contigs_file" -t {params.ragtag_threads} --mm2-params "-x {params.ragtag_mm2_preset}" -f {params.ragtag_min_unique_len} -q {params.ragtag_min_mapq} {params.infer_gaps_flag} {params.remove_small_flag} 
+            ragtag.py scaffold "$ref_file" "$contigs_file" \
+                -t {params.ragtag_threads} \
+                --mm2-params "-x {params.ragtag_mm2_preset}" \
+                -f {params.ragtag_min_unique_len} \
+                -q {params.ragtag_min_mapq} {params.infer_gaps_flag} {params.remove_small_flag} 
             cd -
             
         done < {input.refs_mapping}
