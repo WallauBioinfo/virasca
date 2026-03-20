@@ -69,6 +69,9 @@ rule blastn:
     input:
         query = get_blastn_input,
         db = config.get("database_seq")
+    params:
+        blast_task = config.get("blast_task", "blastn"),
+        blast_word_size = config.get("blast_word_size", 11)
     output:
         f"{OUTPUT_DIR}/blastn_results.tsv"
     threads: config.get("threads")
@@ -77,7 +80,8 @@ rule blastn:
         blastn -db {input.db} \
             -query {input.query} \
             -out {output} \
-            -task blastn \
+            -task {params.blast_task} \
+            -word_size {params.blast_word_size} \
             -evalue 0.001 \
             -outfmt "6 qseqid qlen sseqid slen qstart qend sstart send evalue bitscore pident qcovs qcovhsp length" \
             -max_hsps 1 \
